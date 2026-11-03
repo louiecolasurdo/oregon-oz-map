@@ -715,6 +715,9 @@ input[type=search]{min-width:0;flex:1 1 220px;max-width:340px}
 .mapbox{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden}
 #map{width:100%;height:min(72vh,720px);min-height:420px;background:var(--hover);font-family:var(--f-body)}
 .leaflet-container a{color:var(--focus)}
+.leaflet-tile-pane{filter:saturate(.75)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.85) saturate(.6)}}
+:root[data-theme="dark"] .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.85) saturate(.6)}
 .leaflet-bar a{background:var(--panel);color:var(--ink);border-bottom-color:var(--line)}
 .leaflet-bar a:hover{background:var(--hover)}
 .leaflet-control-attribution{background:color-mix(in srgb,var(--panel) 85%,transparent)!important;color:var(--muted)}
@@ -789,7 +792,7 @@ body{margin:0} [hidden]{display:none!important}
     </aside>
   </div>
 
-  <p class="foot">Source: Business Oregon, "Oregon Opportunity Zone 2.0 – Final Designations" (Oct 28, 2026). Boundaries: 2020 U.S. Census tracts. Street map © OpenStreetMap contributors, © CARTO. "Rural" is Oregon's classification on that list; confirm a tract's rural status in Treasury's eligible-tracts file before relying on the 30% rural step-up. For research only, not a tax determination.</p>
+  <p class="foot">Source: Business Oregon, "Oregon Opportunity Zone 2.0 – Final Designations" (Oct 28, 2026). Boundaries: 2020 U.S. Census tracts. Street map © OpenStreetMap contributors. "Rural" is Oregon's classification on that list; confirm a tract's rural status in Treasury's eligible-tracts file before relying on the 30% rural step-up. For research only, not a tax determination.</p>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -800,8 +803,7 @@ const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim
 const isDark=()=>{const t=document.documentElement.dataset.theme;return t?t==="dark":matchMedia("(prefers-color-scheme: dark)").matches;};
 const OR_BOUNDS=[[41.95,-124.65],[46.3,-116.45]];
 const map=L.map("map",{zoomSnap:.25,minZoom:5,maxZoom:18,preferCanvas:false}).fitBounds(OR_BOUNDS);
-const tileUrl=()=>`https://{s}.basemaps.cartocdn.com/${isDark()?"dark_all":"rastertiles/voyager"}/{z}/{x}/{y}{r}.png`;
-const tiles=L.tileLayer(tileUrl(),{subdomains:"abcd",maxZoom:20,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>'}).addTo(map);
+const tiles=L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'}).addTo(map);
 
 const feats=TRACTS.features;
 feats.forEach(f=>{const p=f.properties;p.cls=p.type==="Rural"?"rural":"urban";p.sqmi=p.aland/2589988.11;});
@@ -878,7 +880,7 @@ sel.onchange=()=>{county=sel.value;render();
 document.getElementById("q").oninput=e=>{q=e.target.value.trim().toLowerCase();render();};
 document.getElementById("reset").onclick=()=>map.flyToBounds(OR_BOUNDS,{duration:.8});
 document.getElementById("metro").onclick=()=>map.flyToBounds([[45.33,-123.05],[45.62,-122.35]],{duration:.8});
-const retheme=()=>{tiles.setUrl(tileUrl());countyLayer.setStyle({color:css("--county")});render();};
+const retheme=()=>{countyLayer.setStyle({color:css("--county")});render();};
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change",retheme);
 new MutationObserver(retheme).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
 render();
